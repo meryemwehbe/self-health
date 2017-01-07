@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/t1"
+        android:text="Daily Steps:"
+        android:textSize="35dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/dark_red"/>
+    <TextView
+        android:layout_below="@+id/t1"
+        android:textSize="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textView" />
+
+
+    <TextView
+        android:id="@+id/t2"
+        android:text="Weekly steps:"
+        android:textSize="35dp"
+        android:layout_below="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/dark_red"/>
+    <TextView
+        android:layout_below="@+id/t2"
+        android:textSize="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textView2"
+        />
+    <TextView
+        android:layout_above="@+id/week_win"
+        android:textSize="25dp"
+        android:text="Congratulations! You Met Your Daily Goal!!"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/day_win"
+        android:visibility="invisible"
+
+        />
+    <TextView
+        android:layout_above="@+id/imageView"
+        android:textSize="25dp"
+        android:text="Congratulations! You Met Your Weekly Goal!"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/week_win"
+        android:paddingBottom="10dp"
+        android:visibility="invisible"
+        />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:srcCompat="@drawable/running"
+        android:id="@+id/imageView"
+        android:scaleType="centerCrop"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="22dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"/>
+
+
+</RelativeLayout>

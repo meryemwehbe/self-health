@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/my_measurement"
+        android:title="My Measurement"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/my_schedule"
+        android:title="My Schedule"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/my_assessment"
+        android:title="My Assessment"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/my_doctor"
+
+        android:title="My Doctor"
+        app:showAsAction="never"/>
+
+</menu>

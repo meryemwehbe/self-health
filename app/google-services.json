@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_number": "348779970747",
+    "project_id": "cool-codex-148617"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348779970747:android:b8a54e29aa4ac757",
+        "android_client_info": {
+          "package_name": "com.example.self_health"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348779970747-l5iq0jn741nhp74elftjcdvrvokqg40h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.self_health",
+            "certificate_hash": "4D360D5463B2FA9004D8C5A095B0B7BB4F69D95D"
+          }
+        },
+        {
+          "client_id": "348779970747-pg2t44tccghote3s8vfdrn455es8hcod.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJrMYG1MqEvTT6Mlfov-YkmPQizEI9Drs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-88679242-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
