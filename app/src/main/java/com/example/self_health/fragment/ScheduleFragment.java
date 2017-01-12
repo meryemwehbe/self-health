@@ -1,9 +1,12 @@
 package com.example.self_health.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,7 +17,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.self_health.R;
+import com.example.self_health.other.DataBaseHelperAssignTasks;
+import com.example.self_health.other.DataBaseHelperRelations;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,13 +35,20 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class ScheduleFragment extends Fragment{
-    // TODO: Rename parameter arguments, choose names that match
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private RecyclerView mTaskRecyclerView;
     private  TaskAdapter mAdapter;
-    // TODO: Rename and change types of parameters
+    private DataBaseHelperAssignTasks mdbassign;
+    private String myid;
+    private Calendar myCalendar;
+
+    private ArrayList<Boolean> done =  new ArrayList<Boolean>();
+    private ArrayList<String> titles = new ArrayList<String>();
+    private ArrayList<String> dates = new ArrayList<String>();
+
     private String mParam1;
     private String mParam2;
 
@@ -67,6 +83,39 @@ public class ScheduleFragment extends Fragment{
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        mdbassign = new DataBaseHelperAssignTasks(getContext());
+        myid = getArguments().getString("ID");
+        myCalendar = Calendar.getInstance();
+
+        mdbassign = new DataBaseHelperAssignTasks(getContext());
+        mdbassign.open();
+
+        myCalendar.add(Calendar.WEEK_OF_YEAR ,- 1);
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String datetime = dateTimeFormat.format(myCalendar.getTime());
+        Cursor cursor = mdbassign.getTasks(myid,datetime);
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()){
+            String task = cursor.getString(1) + " "+ cursor.getString(2)+ " "+cursor.getString(3) ;
+            titles.add(task);
+            String y = cursor.getString(4);
+            if (y.equals("0")){
+                done.add(false);
+            }else if(y.equals("1")){
+                done.add(true);
+            }
+            String p = cursor.getString(5);
+            dates.add(p);
+
+
+
+
+            cursor.moveToNext();
+
+        }
+        mdbassign.close();
+
     }
 
     @Override
@@ -74,6 +123,7 @@ public class ScheduleFragment extends Fragment{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view =inflater.inflate(R.layout.fragment_schedule, container, false);
+
         mTaskRecyclerView = (RecyclerView) view
                 .findViewById(R.id.crime_recycler_view);
         mTaskRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -81,8 +131,8 @@ public class ScheduleFragment extends Fragment{
         return  view;
     }
     private void updateUI() {
-        TaskLab taskLab = TaskLab.get(getActivity());
-        List<MyTask> tasks = taskLab.getCrimes();
+        TaskLab taskLab = new TaskLab(getContext(),titles,dates,done);
+        List<MyTask> tasks = taskLab.gettaskes();
         mAdapter = new TaskAdapter(tasks);
         mTaskRecyclerView.setAdapter(mAdapter);
     }
@@ -104,16 +154,53 @@ public class ScheduleFragment extends Fragment{
         }
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(),
-                    mtask.getTitle() + " clicked!", Toast.LENGTH_SHORT)
-                    .show();
+                //Ask user if task is done
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                    getContext());
+
+                // set title
+                alertDialogBuilder.setTitle("Are you sure you have completed: " + mtask.getTitle());
+
+                // set dialog message
+                alertDialogBuilder
+                    .setCancelable(false)
+                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            String title = mtask.getTitle();
+                            String[] stuff = title.split(" ");
+                            String action = stuff[0];
+                            String date = mtask.getDate();
+                            mdbassign.open();
+                            int status = mdbassign.assignTaskDone(myid,action,date);
+                            mdbassign.close();
+                            if (status != -1){
+                                Toast.makeText(getContext(),"Sucessfully removed",Toast.LENGTH_LONG).show();
+                            }else{
+                                Toast.makeText(getContext(),"Something went wrong",Toast.LENGTH_LONG).show();
+                            }
+
+                        }
+                    })
+                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            // if this button is clicked, just close
+                            // the dialog box and do nothing
+                            dialog.cancel();
+                        }
+                    });
+
+                    // create alert dialog
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+
+                    // show it
+                    alertDialog.show();
         }
 
         public void bindTask(MyTask task) {
             mtask = task;
             mTitleTextView.setText(mtask.getTitle());
             mDateTextView.setText(mtask.getDate().toString());
-            mSolvedTask.setChecked(mtask.isSolved());
+            mSolvedTask.setChecked(mtask.isDone());
         }
     }
 

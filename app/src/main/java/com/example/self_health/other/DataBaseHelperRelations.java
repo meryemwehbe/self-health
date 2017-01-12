@@ -65,6 +65,10 @@ public class DataBaseHelperRelations {
         return mDb.query(DATABASE_TABLE, new String[] {KEY_DOC, KEY_PAT,
                 KEY_NAME}, null, null, null, null, null);
     }
+    public Cursor getPatients(String id){
+        return mDb.rawQuery("SELECT * FROM "+ DATABASE_TABLE + " WHERE "+ KEY_DOC + " = '"+ id + "';",null);
+    }
+
 
     private static class DatabaseHelper extends SQLiteOpenHelper{
         DatabaseHelper(Context context){

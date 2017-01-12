@@ -6,13 +6,14 @@
     <TextView
         android:id="@+id/list_item_task_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@color/blue_grey_600"/>
 
     <TextView
         android:id="@+id/list_item_task_date_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
+        android:layout_height="wrap_content"
+        android:textColor="@color/blue_grey_600"/>
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

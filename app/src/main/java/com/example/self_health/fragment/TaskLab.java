@@ -11,34 +11,29 @@ import java.util.UUID;
  */
 
 public class TaskLab {
-    private static TaskLab sCrimeLab;
-    private List<MyTask> mTaskes;
+    private static TaskLab Lab;
+    private List<MyTask> mTasks;
 
-    public static TaskLab get(Context context) {
-        if (sCrimeLab == null) {
-            sCrimeLab = new TaskLab(context);
-        }
-        return sCrimeLab;
-    }
-    private TaskLab(Context context) {
-        mTaskes = new ArrayList<>();
+    public TaskLab(Context context, ArrayList<String> titles, ArrayList<String> dates,ArrayList<Boolean> done) {
+        mTasks = new ArrayList<>();
 
-        for (int i = 0; i < 100; i++) {
-            MyTask crime = new MyTask();
-            crime.setTitle("Crime #" + i);
-            crime.setSolved(i % 2 == 0); // Every other one
-            mTaskes.add(crime);
+        for (int i = 0; i < titles.size(); i++) {
+            MyTask task = new MyTask();
+            task.setTitle(titles.get(i));
+            task.setDone(done.get(i)); // Every other one
+            task.setDate(dates.get(i));
+            mTasks.add(task);
         }
 
     }
-    public List<MyTask> getCrimes() {
-        return mTaskes;
+    public List<MyTask> gettaskes() {
+        return mTasks;
     }
-    public MyTask getCrime(UUID id) {
-        for (MyTask task : mTaskes) {
-            if (task.getId().equals(id)) {
-                return task;
-            }
+    public MyTask getTask(UUID id) {
+        for (MyTask task : mTasks) {
+            //if (task.getId().equals(id)) {
+              //  return task;
+           // }
         }
         return null;
     }

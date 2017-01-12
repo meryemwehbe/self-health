@@ -8,22 +8,12 @@ import java.util.UUID;
  */
 
 public class MyTask {
-    private UUID mId;
     private String mTitle;
-    private Date mDate;
-    private boolean mSolved;
+    private String mDate;
+    private boolean mDone;
 
     public MyTask() {
-        mId = UUID.randomUUID();
-        mDate = new Date();
-    }
 
-    public UUID getId() {
-        return mId;
-    }
-
-    public void setId(UUID mId) {
-        this.mId = mId;
     }
 
     public String getTitle() {
@@ -34,19 +24,19 @@ public class MyTask {
         this.mTitle = mTitle;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return mDate;
     }
 
-    public void setDate(Date mDate) {
+    public void setDate(String mDate) {
         this.mDate = mDate;
     }
 
-    public boolean isSolved() {
-        return mSolved;
+    public boolean isDone() {
+        return mDone;
     }
 
-    public void setSolved(boolean mSolved) {
-        this.mSolved = mSolved;
+    public void setDone(boolean mSolved) {
+        this.mDone = mSolved;
     }
 }

@@ -1,14 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.self_health.fragment.DoctorFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Assign task"
+        android:layout_gravity="center"
+        android:textSize="40dp"
+        android:layout_margin="20dp"
+        android:textColor="@color/dark_red"/>
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content">
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Patient"
+                android:layout_margin="10dp"
+                android:textSize="25dp"
+                android:textColor="@color/blue_grey_500"/>
+            <Spinner
+                android:id="@+id/spinnername"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Action"
+                android:layout_margin="10dp"
+                android:textSize="25dp"
+                android:textColor="@color/blue_grey_500"/>
+            <Spinner
+                android:id="@+id/spinneraction"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Type"
+                android:layout_margin="10dp"
+                android:textSize="25dp"
+                android:textColor="@color/blue_grey_500"/>
+            <Spinner
+                android:id="@+id/spinnertype"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add Message"
+                android:layout_margin="10dp"
+                android:textSize="25dp"
+                android:textColor="@color/blue_grey_500"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/message"
+                />
 
-</FrameLayout>
+        </TableRow>
+        <TableRow
+            android:id="@+id/pillrow"
+            android:visibility="invisible">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pills"
+                android:layout_margin="10dp"
+                android:textSize="25dp"
+                android:textColor="@color/blue_grey_500"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pill_to_take"
+                />
+
+        </TableRow>
+    </TableLayout>
+
+
+
+
+
+    <Button
+        android:text="Assign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_assign"
+
+        android:layout_gravity="center"
+        android:background="@drawable/bg_circle"
+        android:textColor="@color/White"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_marginBottom="35dp"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="10dp"
+        android:layout_centerHorizontal="true" />
+</LinearLayout>
