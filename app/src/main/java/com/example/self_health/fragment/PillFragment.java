@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.self_health.R;
 import com.example.self_health.activity.MainActivity;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -33,6 +34,10 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.result.DataTypeResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -48,42 +53,29 @@ public class PillFragment extends Fragment {
     private Button save;
     private GoogleApiClient mClient;
     private ListView listView;
+    private DatabaseHelperInformation mdb;
+    private String ID;
+    private Calendar mCalendar;
     //TODO: must be specified by doctor
     private ArrayList<Integer> checked ;
-    private String[] pilllist ={
-            "Amlodipine",
-            "Oxycodone",
-            "OxyContin" ,
-            "Atenolol (Tenormin)",
-            "Omeprazole (Prilosec)",
-            "Atorvastatin (Lipitor)",
-            "Cetirizine (Zyrtec)",
-            "Citalopram (Celexa)",
-            "Clonazepam (Klonopin)",
-            "Doxazosin (Cardura)",
-            "Blood thinners (Coumadin, warfarin)",
-            "Finasteride (Proscar)",
-            "Levothyroxine (Synthroid)",
-            "Lisinopril (Zestril)",
-            "Lovastatin (Mevacor)",
-            "Metformin (Glucophage)",
-            "Metoprolol (Toprol)",
-            "Nefazodone (Serzone)",
-            "Olanzapine (Zyprexa)",
-            "Paroxetine (Paxil)",
-            "Pravastatin (Pravachol)",
-            "Quinapril (Accupril)",
-            "Rosuvastatin (Crestor)",
-            "Sertraline (Zoloft)",
-            "Sildenafil (Viagra)",
-            "Simvastatin (Zocor)",
-    };
+    private ArrayList<String> pilllist = new ArrayList<String>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-      checked = new ArrayList<Integer>();
-        for (int i=0;i < pilllist.length; i++){
+        checked = new ArrayList<Integer>();
+
+        ID = getArguments().getString("ID");
+        mdb = new DatabaseHelperInformation(getContext());
+        mCalendar = Calendar.getInstance();
+
+        pilllist.add("Amlodipine");
+        pilllist.add("Oxycodone");
+        pilllist.add("OxyContin");
+        pilllist.add("Atenolol (Tenormin)");
+        pilllist.add("Omeprazole (Prilosec)");
+        pilllist.add("Atorvastatin (Lipitor)");
+        for (int i=0;i < pilllist.size(); i++){
             checked.add(0);
         }
         mClient = ((MainActivity)getActivity()).mClient;
@@ -94,8 +86,8 @@ public class PillFragment extends Fragment {
         View view = inflater.inflate(R.layout.pill_fragment, container, false);
 
         countryList = new ArrayList<String>();
-        for (int i =0; i <pilllist.length;i++){
-            countryList.add(pilllist[i]);
+        for (int i =0; i <pilllist.size();i++){
+            countryList.add(pilllist.get(i));
         }
         listView = (ListView) view.findViewById(R.id.list_pills);
         save = new Button(getContext());
@@ -110,6 +102,35 @@ public class PillFragment extends Fragment {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //save in database
+                JSONObject json =new JSONObject();
+
+                Date now = new Date();
+                mCalendar.setTime(now);
+                SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                String datetime = dateTimeFormat.format(mCalendar.getTime());
+
+                for (int i=0; i <checked.size();i++) {
+                    if (checked.get(i) == 1) {
+                        try {
+                            json.put("PILL_NAME", countryList.get(i));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        mdb.open();
+                        long status = mdb.createInstance(ID,"PILL",json.toString(),datetime);
+                        mdb.close();
+                        if(status != -1) {
+                            Toast.makeText(getContext(), "Successfully Stored", Toast.LENGTH_LONG).show();
+                        }else{
+                            Toast.makeText(getContext(), "Something went wrong try again", Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                }
+
+
                 DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
                         .setName("com.example.self_health.PillsTaken")
                         .addField("Date", Field.FORMAT_STRING)
@@ -127,12 +148,11 @@ public class PillFragment extends Fragment {
                                 // Retrieve the created data type
                                 DataType pillType = dataTypeResult.getDataType();
                                 // Set a start and end time for our data, using a start time of 1 hour before this moment.
-                                Calendar cal = Calendar.getInstance();
                                 Date now = new Date();
-                                cal.setTime(now);
-                                long endTime = cal.getTimeInMillis();
-                                cal.add(Calendar.HOUR_OF_DAY, -1);
-                                long startTime = cal.getTimeInMillis();
+                                mCalendar.setTime(now);
+                                long endTime = mCalendar.getTimeInMillis();
+                                mCalendar.add(Calendar.HOUR_OF_DAY, -1);
+                                long startTime = mCalendar.getTimeInMillis();
 
                                 // Create a data source
                                 DataSource dataSource = new DataSource.Builder()
@@ -159,6 +179,7 @@ public class PillFragment extends Fragment {
                                     if(checked.get(i) == 1) {
                                         checked.remove(i);
                                         countryList.remove(i);
+                                        pilllist.remove(i);
 
                                     }else{
                                         i++;
@@ -277,7 +298,7 @@ public class PillFragment extends Fragment {
             }
 
 
-            holder.code.setText(pilllist[position] );
+            holder.code.setText(pilllist.get(position) );
             holder.name.setChecked((checked.get(position) == 1));
 
             return convertView;

@@ -7,10 +7,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.self_health.R;
 import com.example.self_health.activity.MainActivity;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -24,6 +27,10 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DailyTotalResult;
 import com.google.android.gms.fitness.result.DataReadResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -40,10 +47,15 @@ public class StepFragment extends Fragment {
     private GoogleApiClient mGoogleApiClient;
     private GoogleSignInOptions mgso;
     private String mid;
-    private long daily_count,weekly_count = 0;
     private TextView daily,week, weekwin,daywin;
     private int Goal_day, Goal_week;
     private boolean DailyGoalMet,WeeklyGoalMet =false;
+    private Timer mTimer;
+    private long weekly_count,daily_count;
+    private DatabaseHelperInformation mdb;
+    private Calendar mCalendar;
+    private Button nt_doc1,nt_doc2;
+
 
 
     public StepFragment(){}
@@ -52,19 +64,21 @@ public class StepFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         mid = getArguments().getString("ID");
+        mdb = new DatabaseHelperInformation(getContext());
+        mCalendar = Calendar.getInstance();
 
         mGoogleApiClient = ((MainActivity)getActivity()).mClient;
 
         int delay = 5000; // delay for 5 sec.
-        int period = 30000; // repeat 1/2 minute.
+        int period = 1000; // repeat 1/2 minute.
 
         //TODO:Get from doctor schedule
         Goal_day = 8000;
         Goal_week = 49000;
 
-        Timer timer = new Timer();
+         mTimer = new Timer();
 
-        timer.scheduleAtFixedRate(new TimerTask() {
+        mTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 VerifyDataTask task1 = new VerifyDataTask();
@@ -86,6 +100,34 @@ public class StepFragment extends Fragment {
         week = (TextView) view.findViewById(R.id.textView2);
         weekwin = (TextView) view.findViewById(R.id.week_win);
         daywin = (TextView) view.findViewById(R.id.day_win);
+        nt_doc1 = (Button) view.findViewById(R.id.btn_daily);
+        nt_doc1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Save in database for doctor
+                JSONObject json =new JSONObject();
+                try {
+                    json.put("DAILY",daily_count);
+                    json.put("WEEKLY",weekly_count);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Date now = new Date();
+                mCalendar.setTime(now);
+                SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                String datetime = dateTimeFormat.format(mCalendar.getTime());
+
+                mdb.open();
+                long status = mdb.createInstance(mid,"STEPS",json.toString(),datetime);
+                mdb.close();
+                if(status != -1) {
+                    Toast.makeText(getContext(), "Successfully Notified", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getContext(), "Something went wrong try again", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
         return  view;
     }
@@ -239,6 +281,7 @@ public class StepFragment extends Fragment {
     public void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
+        mTimer.cancel();
     }
 
 

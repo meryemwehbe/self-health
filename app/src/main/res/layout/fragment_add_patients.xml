@@ -58,4 +58,27 @@
         android:layout_alignLeft="@+id/text1"
         android:layout_alignStart="@+id/text1" />
 
+    <TextView
+        android:id="@+id/text3"
+        android:textSize="30dp"
+        android:textColor="@color/blue_grey_800"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name:"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="39dp"
+        android:layout_marginStart="39dp" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_alignBaseline="@+id/text3"
+        android:layout_alignBottom="@+id/text3"
+        android:layout_alignRight="@+id/btn_add_id"
+        android:layout_alignEnd="@+id/btn_add_id" />
+
 </RelativeLayout>

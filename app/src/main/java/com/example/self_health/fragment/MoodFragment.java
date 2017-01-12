@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.example.self_health.R;
 import com.example.self_health.activity.LoginActivity;
 import com.example.self_health.activity.MainActivity;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.example.self_health.other.ImageAdapter;
 import com.example.self_health.other.ImageAdapterMood;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,6 +30,10 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.result.DataTypeResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -71,12 +76,20 @@ public class MoodFragment extends Fragment {
     };
     private String current_mood = "";
     private GoogleApiClient mClient = null;
+    private DatabaseHelperInformation mdb;
+    private Calendar mCalendar;
+    private String ID ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_mood, container, false);
+        mCalendar = Calendar.getInstance();
+        mdb = new DatabaseHelperInformation(getContext());
+        ID= getArguments().getString("ID");
+
+
         GridView gridview = (GridView) view.findViewById(R.id.gridviewmood);
         gridview.setAdapter(new ImageAdapter(getContext(),names,mThumbIds,200,200));
         mClient = ((MainActivity)getActivity()).mClient;
@@ -88,6 +101,29 @@ public class MoodFragment extends Fragment {
 
                 current_mood = names[position];
                 SaveMood();
+                //save for doctor
+                JSONObject json =new JSONObject();
+                try {
+                    json.put("FEELING",current_mood);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Date now = new Date();
+                mCalendar.setTime(now);
+                SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                String datetime = dateTimeFormat.format(mCalendar.getTime());
+
+                mdb.open();
+                long status = mdb.createInstance(ID,"MOOD",json.toString(),datetime);
+                mdb.close();
+
+                if(status != -1) {
+                    Toast.makeText(getContext(), "Successfully Stored", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getContext(), "Something went wrong try again", Toast.LENGTH_LONG).show();
+                }
+
 
 
             }
@@ -122,14 +158,12 @@ public class MoodFragment extends Fragment {
                                 .build();
 
                         DataSet dataSet = DataSet.create(datasource);
-                        Calendar cal = Calendar.getInstance();
-                        Date now = new Date();
-                        cal.setTime(now);
-                        long endTime = cal.getTimeInMillis();
-                        cal.add(Calendar.HOUR_OF_DAY, -1);
-                        long startTime = cal.getTimeInMillis();
+                        long endTime = mCalendar.getTimeInMillis();
+                        mCalendar.add(Calendar.HOUR_OF_DAY, -1);
+                        long startTime = mCalendar.getTimeInMillis();
+                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                         DataPoint dataPoint = DataPoint.create(datasource);
-                        dataPoint.getValue(dataPoint.getDataSource().getDataType().getFields().get(0)).setString(now.toString());
+                        dataPoint.getValue(dataPoint.getDataSource().getDataType().getFields().get(0)).setString(dateTimeFormat.format(mCalendar.getTime()));
                         dataPoint.getValue(dataPoint.getDataSource().getDataType().getFields().get(1)).setString(current_mood);
                         dataPoint.setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                         dataSet.add(dataPoint);

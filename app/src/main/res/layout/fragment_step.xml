@@ -6,14 +6,6 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/t1"
-        android:text="Daily Steps:"
-        android:textSize="35dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/dark_red"/>
-    <TextView
         android:layout_below="@+id/t1"
         android:textSize="50dp"
         android:layout_width="wrap_content"
@@ -74,6 +66,29 @@
         android:layout_marginBottom="22dp"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"/>
+
+    <TextView
+        android:id="@+id/t1"
+        android:text="Daily Steps:"
+        android:textSize="35dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/dark_red"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/btn_daily"
+        android:text="Notify Doctor"
+        android:textSize="10dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/bg_circle"
+        android:textColor="@color/White"
+        android:layout_above="@+id/day_win"
+        android:layout_toRightOf="@+id/t2"
+        android:layout_toEndOf="@+id/t2"
+        android:layout_marginBottom="20dp" />
 
 
 </RelativeLayout>

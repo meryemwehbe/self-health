@@ -28,6 +28,7 @@ import org.w3c.dom.Text;
 public class FoodFragment extends Fragment {
     private Button br,lun,snac,din;
     private  String type;
+    private String id;
 
 public static FoodFragment newInstance(){
     return new FoodFragment();
@@ -36,6 +37,7 @@ public static FoodFragment newInstance(){
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_food, container, false);
+        id = getArguments().getString("ID");
 
         br =(Button)view.findViewById(R.id.btn_br);
         lun =(Button)view.findViewById(R.id.btn_lunch);
@@ -46,6 +48,7 @@ public static FoodFragment newInstance(){
             public void onClick(View v) {
                 Bundle bundle = new Bundle();
                 bundle.putString("Type", "Breakfast");
+                bundle.putString("ID", id);
                 Food fragment = new Food();
                 fragment.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();

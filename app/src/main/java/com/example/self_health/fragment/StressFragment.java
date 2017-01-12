@@ -1,6 +1,7 @@
 package com.example.self_health.fragment;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import com.example.self_health.R;
 import com.example.self_health.activity.MainActivity;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -37,6 +39,10 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.result.DataTypeResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +61,9 @@ public class StressFragment extends Fragment {
     private GoogleApiClient mClient;
     private String reason = "";
     private RadioGroup radiogroup;
+    private DatabaseHelperInformation mdb;
+    private String ID;
+    private Calendar mCalendar;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +74,10 @@ public class StressFragment extends Fragment {
         start_position = (int) (((start_pos - start) / (end - start)) * 100);
         discrete = start_pos;
         mClient = ((MainActivity)getActivity()).mClient;
+        mdb = new DatabaseHelperInformation(getContext());
+        ID = getArguments().getString("ID");
+        mCalendar = Calendar.getInstance();
+
     }
         @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,6 +88,33 @@ public class StressFragment extends Fragment {
         save.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //Save in database for doctor
+                    JSONObject json =new JSONObject();
+                    try {
+                        json.put("LEVEL",discrete);
+                        json.put("REASON",reason);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Date now = new Date();
+                    mCalendar.setTime(now);
+                    SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    String datetime = dateTimeFormat.format(mCalendar.getTime());
+
+                    mdb.open();
+                    // mdb.createtable();
+                    long status = mdb.createInstance(ID,"STRESS_LEVEL",json.toString(),datetime);
+                    mdb.close();
+
+                    if(status != -1) {
+                        Toast.makeText(getContext(), "Successfully Stored", Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(getContext(), "Something went wrong try again", Toast.LENGTH_LONG).show();
+                    }
+
+                    //Save in Googlefit
                     DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
                             .setName("com.example.self_health.Stress_level")
                             .addField("Date", Field.FORMAT_STRING)
@@ -93,18 +133,17 @@ public class StressFragment extends Fragment {
                                     // Retrieve the created data type
                                     DataType pressureType = dataTypeResult.getDataType();
                                     // Set a start and end time for our data, using a start time of 1 hour before this moment.
-                                    Calendar cal = Calendar.getInstance();
                                     Date now = new Date();
-                                    cal.setTime(now);
-                                    long endTime = cal.getTimeInMillis();
-                                    cal.add(Calendar.HOUR_OF_DAY, -1);
-                                    long startTime = cal.getTimeInMillis();
+                                    mCalendar.setTime(now);
+                                    long endTime = mCalendar.getTimeInMillis();
+                                    mCalendar.add(Calendar.HOUR_OF_DAY, -1);
+                                    long startTime = mCalendar.getTimeInMillis();
 
                                     // Create a data source
                                     DataSource dataSource = new DataSource.Builder()
                                             .setAppPackageName(getContext())
                                             .setDataType(pressureType)
-                                            .setStreamName("Blood_pressure")
+                                            .setStreamName("stress_level")
                                             .setType(DataSource.TYPE_RAW)
                                             .build();
 

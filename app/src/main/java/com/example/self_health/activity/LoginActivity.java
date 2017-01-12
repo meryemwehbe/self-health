@@ -1,7 +1,10 @@
 package com.example.self_health.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -63,6 +66,9 @@ public class LoginActivity extends AppCompatActivity {
     private String LoginId ,personName,personGivenName,personFamilyName,personEmail;
     private Uri uri;
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,10 +101,12 @@ public class LoginActivity extends AppCompatActivity {
 
         //Connect to google API
         buildClient();
-
     //Gmail sign in button
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
+
+
+
 
     }
 
@@ -307,6 +315,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
         );
     }
+
     /*
      * Check Type on user
      */
@@ -399,26 +408,26 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         mClient.connect();
 
-        //OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mClient);
-        //if (opr.isDone()) {
+        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mClient);
+        if (opr.isDone()) {
             // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
             // and the GoogleSignInResult will be available instantly.
            // Log.d(TAG, "Got cached sign-in");
-          //  GoogleSignInResult result = opr.get();
-          //  handleSignInResult(result);
-        //} else {
+           GoogleSignInResult result = opr.get();
+            handleSignInResult(result);
+        } else {
             // If the user has not previously signed in on this device or the sign-in has expired,
             // this asynchronous branch will attempt to sign in the user silently.  Cross-device
             // single sign-on will occur in this branch.
-           // showProgressDialog();
-          //  opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-          //      @Override
-           //     public void onResult(GoogleSignInResult googleSignInResult) {
-              //      hideProgressDialog();
-             //       handleSignInResult(googleSignInResult);
-           //     }
-           // });
-        //}
+           showProgressDialog();
+           opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                @Override
+               public void onResult(GoogleSignInResult googleSignInResult) {
+                    hideProgressDialog();
+                    handleSignInResult(googleSignInResult);
+                }
+            });
+        }
     }
     @Override
     protected void onStop() {

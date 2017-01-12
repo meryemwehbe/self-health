@@ -1,6 +1,7 @@
 package com.example.self_health.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,6 +33,7 @@ import com.example.self_health.fragment.MeasurementFragment;
 import com.example.self_health.fragment.ScheduleFragment;
 import com.example.self_health.fragment.SettingsFragment;
 import com.example.self_health.fragment.ViewAssessments;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -84,6 +86,7 @@ public class MainActivityDoctor extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_doctor);
+
         //get info
         Intent i = getIntent();
         mname = i.getExtras().get("personName").toString();
@@ -158,7 +161,7 @@ public class MainActivityDoctor extends AppCompatActivity{
      */
     private void loadNavHeader() {
         // name, website
-        txtName.setText("Meryem Wehbe");
+        txtName.setText(mname);
 
 
 

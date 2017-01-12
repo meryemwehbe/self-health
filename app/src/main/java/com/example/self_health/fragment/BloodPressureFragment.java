@@ -1,6 +1,7 @@
 package com.example.self_health.fragment;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -28,6 +29,7 @@ import android.widget.Toast;
 
 import com.example.self_health.R;
 import com.example.self_health.activity.MainActivity;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -42,6 +44,10 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.result.DataTypeResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -69,8 +75,11 @@ public class BloodPressureFragment extends Fragment{
     private String medication;
     private int heart_beat;
     private Button save;
+    private String ID;
 
     private GoogleApiClient mGoogleApiClient;
+    private DatabaseHelperInformation mdb;
+    private Calendar mCalendar;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +98,9 @@ public class BloodPressureFragment extends Fragment{
         discrete2=start_pos2;
 
         mGoogleApiClient = ((MainActivity)getActivity()).mClient;
+        ID = getArguments().getString("ID");
+        mCalendar = Calendar.getInstance();
+        mdb = new DatabaseHelperInformation(getContext());
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -130,6 +142,33 @@ public class BloodPressureFragment extends Fragment{
                                     public void onClick(View v) {
                                         heart_beat = Integer.parseInt(hb_text.getText().toString());
 
+                                        //Save in database for doctor
+                                        JSONObject json =new JSONObject();
+                                        try {
+                                            json.put("Systolic",discrete1);
+                                            json.put("Diatolic",discrete2);
+                                            json.put("HEART_BEAT",heart_beat);
+                                            json.put("MEDICATION",medication);
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        Date now = new Date();
+                                        mCalendar.setTime(now);
+                                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                                        String datetime = dateTimeFormat.format(mCalendar.getTime());
+
+                                        mdb.open();
+                                        long status = mdb.createInstance(ID,"BLOOD_PRESSURE",json.toString(),datetime);
+                                        mdb.close();
+
+                                        if(status != -1) {
+                                            Toast.makeText(getContext(), "Successfully Stored", Toast.LENGTH_LONG).show();
+                                        }else{
+                                            Toast.makeText(getContext(), "Something went wrong try again", Toast.LENGTH_LONG).show();
+                                        }
+
+                                        //Save in google fit
                                         DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
                                                 .setName("com.example.self_health.BLOOD_PRESSURE")
                                                 .addField("Systolic", Field.FORMAT_FLOAT)
@@ -141,7 +180,6 @@ public class BloodPressureFragment extends Fragment{
                                         PendingResult<DataTypeResult> pendingResult =
                                                 Fitness.ConfigApi.createCustomDataType(mGoogleApiClient, request);
 
-
                                         pendingResult.setResultCallback(
                                                 new ResultCallback<DataTypeResult>() {
                                                     @Override
@@ -149,12 +187,11 @@ public class BloodPressureFragment extends Fragment{
                                                         // Retrieve the created data type
                                                         DataType pressureType = dataTypeResult.getDataType();
                                                         // Set a start and end time for our data, using a start time of 1 hour before this moment.
-                                                        Calendar cal = Calendar.getInstance();
                                                         Date now = new Date();
-                                                        cal.setTime(now);
-                                                        long endTime = cal.getTimeInMillis();
-                                                        cal.add(Calendar.HOUR_OF_DAY, -1);
-                                                        long startTime = cal.getTimeInMillis();
+                                                        mCalendar.setTime(now);
+                                                        long endTime = mCalendar.getTimeInMillis();
+                                                        mCalendar.add(Calendar.HOUR_OF_DAY, -1);
+                                                        long startTime = mCalendar.getTimeInMillis();
 
                                                         // Create a data source
                                                         DataSource dataSource = new DataSource.Builder()

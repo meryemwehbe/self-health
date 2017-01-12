@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -37,25 +38,28 @@ import com.example.self_health.fragment.AssessmentFragment;
 import com.example.self_health.fragment.MeasurementFragment;
 import com.example.self_health.fragment.ScheduleFragment;
 import com.example.self_health.fragment.SettingsFragment;
+import com.example.self_health.fragment.StepFragment;
 import com.example.self_health.other.CircleTransform;
 import com.example.self_health.other.ClientConnect;
+import com.example.self_health.other.DatabaseHelperInformation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessStatusCodes;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.request.DataSourcesRequest;
-import com.google.android.gms.fitness.result.DataSourcesResult;
 
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,15 +98,14 @@ public class MainActivity extends AppCompatActivity {
     private  String mname;
     Uri mphoto;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
-
 
         //get info
         Intent i = getIntent();
@@ -556,8 +559,5 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-
 
 }
