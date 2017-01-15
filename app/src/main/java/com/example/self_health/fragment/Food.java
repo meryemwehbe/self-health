@@ -351,15 +351,12 @@ public class Food extends Fragment {
                 holder.edit = (EditText) convertView.findViewById(R.id.edit);
                 holder.edit.setTag(position);
                 holder.edit.addTextChangedListener(new GenericTextWatcher(holder.edit));
-                holder.edit.setTag(position);
                 convertView.setTag(holder);
-
 
             }
             else {
                 holder = (CustomAdapter.ViewHolder) convertView.getTag();
             }
-
 
             holder.content.setText(contents[position] );
 

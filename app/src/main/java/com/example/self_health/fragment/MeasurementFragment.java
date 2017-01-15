@@ -124,7 +124,7 @@ public class MeasurementFragment extends Fragment implements
 
         View view = inflater.inflate(R.layout.fragment_measurement, container, false);
         GridView gridview = (GridView) view.findViewById(R.id.gridview);
-        gridview.setAdapter(new ImageAdapter(getContext(),names,mThumbIds,200,200));
+        gridview.setAdapter(new ImageAdapter(getContext(),names,mThumbIds,300,300));
 
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
