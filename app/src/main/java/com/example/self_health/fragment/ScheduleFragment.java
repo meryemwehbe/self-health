@@ -85,11 +85,13 @@ public class ScheduleFragment extends Fragment{
         }
 
         mdbassign = new DataBaseHelperAssignTasks(getContext());
+
         myid = getArguments().getString("ID");
         myCalendar = Calendar.getInstance();
 
         mdbassign = new DataBaseHelperAssignTasks(getContext());
         mdbassign.open();
+        //mdbassign.recreatetable();
 
         myCalendar.add(Calendar.WEEK_OF_YEAR ,- 1);
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

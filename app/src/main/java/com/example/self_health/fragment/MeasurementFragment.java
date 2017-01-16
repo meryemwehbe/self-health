@@ -145,6 +145,18 @@ public class MeasurementFragment extends Fragment implements
                         fragmentTransaction.commitAllowingStateLoss();
                         break;
                     }
+                    case 1:{
+                        Bundle bundle = new Bundle();
+                        bundle.putString("ID", mid);
+                        HeartRateFragment fragment = new HeartRateFragment();
+                        fragment.setArguments(bundle);
+                        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                                android.R.anim.fade_out);
+                        fragmentTransaction.replace(R.id.frame, (Fragment)fragment);
+                        fragmentTransaction.commitAllowingStateLoss();
+                        break;
+                    }
                     case 2:{
                         Bundle bundle = new Bundle();
                         bundle.putString("ID", mid);

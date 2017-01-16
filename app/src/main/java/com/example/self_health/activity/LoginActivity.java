@@ -43,6 +43,8 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.fitness.result.DataTypeResult;
+import com.google.android.gms.fitness.FitnessStatusCodes;
+
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -101,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //Connect to google API
         buildClient();
-    //Gmail sign in button
+        //Gmail sign in button
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
 
@@ -124,6 +126,7 @@ public class LoginActivity extends AppCompatActivity {
     * Function to sign with Gmail
     */
     private void signIn() {
+        boolean k = mClient.isConnected();
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -153,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
-            mStatusTextView.setText("Sign in"+ acct.getDisplayName().toString());
+            mStatusTextView.setText("Sign in "+ acct.getDisplayName().toString());
             LoginId = acct.getId();
             personName= acct.getDisplayName();
             personGivenName = acct.getGivenName();
@@ -175,7 +178,7 @@ public class LoginActivity extends AppCompatActivity {
 
         } else {
             // Signed out, show unauthenticated UI.
-            //Toast.makeText(this,"Wrong username or password",Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"Wrong username or password",Toast.LENGTH_LONG).show();
         }
     }
     /*
@@ -238,8 +241,8 @@ public class LoginActivity extends AppCompatActivity {
                     .enableAutoManage(this, 0, new GoogleApiClient.OnConnectionFailedListener() {
                         @Override
                         public void onConnectionFailed(ConnectionResult result) {
-                          //  Log.i(TAG, "Google Play services connection failed. Cause: " +
-                          //          result.toString());
+                            Log.e(TAG, "Google Play services connection failed. Cause: " +
+                                    result.toString());
                             //Snackbar.make(
                               //      this.findViewById(R.id.main_activity_view),
                                 //    "Exception while connecting to Google Play services: " +
@@ -261,7 +264,10 @@ public class LoginActivity extends AppCompatActivity {
                 .addField("ID", Field.FORMAT_STRING)
                 .addField("Type", Field.FORMAT_STRING)
                 .build();
-        boolean hi = mClient.isConnected();
+        // Checking if the CLient is connected
+        if ( !mClient.isConnected() ){
+            mClient.connect();
+        }
         PendingResult<DataTypeResult> pendingResult =
                 Fitness.ConfigApi.createCustomDataType(mClient, request);
 
@@ -332,6 +338,12 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResult(DataTypeResult dataTypeResult) {
                         // Retrieve the custom data type
+                        // If there's an error with API access (Status code unknown, from debugging)
+                        if(dataTypeResult.getStatus().getStatusCode() ==  FitnessStatusCodes.DATA_TYPE_NOT_FOUND){
+                            Toast.makeText(LoginActivity.this, "There was a problem with Login\nCheck OAuth 2.0 in Google API  ", Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Problem with Logging in - OAuth Account");
+                            return;
+                        }
                         final DataType customType = dataTypeResult.getDataType();
                         Calendar cal = Calendar.getInstance();
                         Date now = new Date();
@@ -342,23 +354,23 @@ public class LoginActivity extends AppCompatActivity {
                         DataReadRequest readRequest = new DataReadRequest.Builder()
                                                 .read(customType)
                                                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                                                .build();
+                        .build();
 
                         Fitness.HistoryApi.readData(mClient, readRequest).setResultCallback(new ResultCallback<DataReadResult>() {
                            @Override
                            public void onResult(@NonNull DataReadResult dataReadResult) {
-                            List<DataPoint> points =  dataReadResult.getDataSet(customType).getDataPoints();
+                               List<DataPoint> points =  dataReadResult.getDataSet(customType).getDataPoints();
                                String type = "";
-                              for (DataPoint point : points){
-                                 List<Field> fields = point.getDataType().getFields();
-                                 Field field1 = fields.get(0);
-                                 Field field2 = fields.get(1);
-                                  String id = point.getValue(field1).asString();
-                                  if(point.getValue(field1).asString().equals(LoginId)) {
-                                   type = point.getValue(field2).toString();
-                                   break;
+                               for (DataPoint point : points){
+                                   List<Field> fields = point.getDataType().getFields();
+                                   Field field1 = fields.get(0);
+                                   Field field2 = fields.get(1);
+                                   String id = point.getValue(field1).asString();
+                                   if(point.getValue(field1).asString().equals(LoginId)) {
+                                       type = point.getValue(field2).toString();
+                                       break;
                                    }
-                                  }
+                              }
                                switch(type){
 
                                    case "0":{
@@ -407,12 +419,14 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         mClient.connect();
+        /* @TODO crashes here when new user
+        boolean k = mClient.isConnected();
 
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mClient);
         if (opr.isDone()) {
             // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
             // and the GoogleSignInResult will be available instantly.
-           // Log.d(TAG, "Got cached sign-in");
+           Log.d(TAG, "Got cached sign-in");
            GoogleSignInResult result = opr.get();
             handleSignInResult(result);
         } else {
@@ -427,7 +441,7 @@ public class LoginActivity extends AppCompatActivity {
                     handleSignInResult(googleSignInResult);
                 }
             });
-        }
+        }*/
     }
     @Override
     protected void onStop() {
