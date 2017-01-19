@@ -1,5 +1,6 @@
 package com.example.self_health.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -60,6 +61,24 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSource;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Device;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Value;
+
+import com.google.android.gms.fitness.request.DataSourcesRequest;
+import com.google.android.gms.fitness.request.OnDataPointListener;
+import com.google.android.gms.fitness.request.SensorRequest;
+import com.google.android.gms.fitness.result.DataSourcesResult;
+
+import android.support.v4.app.ActivityCompat;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,7 +117,12 @@ public class MainActivity extends AppCompatActivity {
     private  String mname;
     Uri mphoto;
 
+    public ArrayList<String> getDatasources() {
+        return datasources;
+    }
+    private ArrayList<String> datasources = new ArrayList<>();
 
+    private static final int PERMISSIONS_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +130,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                PERMISSIONS_REQUEST);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                PERMISSIONS_REQUEST);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.BODY_SENSORS},
+                PERMISSIONS_REQUEST);
 
         //get info
         Intent i = getIntent();
@@ -168,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
             CURRENT_TAG = TAG_HOME;
             loadHomeFragment();
         }
+
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -479,9 +516,9 @@ public class MainActivity extends AppCompatActivity {
                     .addApi(Fitness.CONFIG_API)
                     .addApi(Fitness.HISTORY_API)
                     .addApi(Fitness.RECORDING_API)
-                    //.addScope(new Scope(Scopes.FITNESS_LOCATION_READ))
-                    //.addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
-                    //.addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
+                    .addScope(new Scope(Scopes.FITNESS_LOCATION_READ))
+                    .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
+                    .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
                     .addApi(Auth.GOOGLE_SIGN_IN_API,mgso)
                     .addConnectionCallbacks(
                             new GoogleApiClient.ConnectionCallbacks() {
@@ -522,6 +559,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     })
                     .build();
+
         }
     }
     @Override
@@ -558,6 +596,71 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+        try{
+            listDatasourcesAndSubscribe();
+        }
+        catch(Exception e){
+            Log.e(TAG, e.toString());
+        }
+
+    }
+
+    public void listDatasourcesAndSubscribe() {
+        Fitness.SensorsApi.findDataSources(mClient, new DataSourcesRequest.Builder()
+                .setDataTypes(
+                        DataType.TYPE_HEART_RATE_BPM )
+                .setDataSourceTypes(DataSource.TYPE_RAW, DataSource.TYPE_DERIVED)
+                .build())
+                .setResultCallback(new ResultCallback<DataSourcesResult>() {
+                    @Override
+                    public void onResult(DataSourcesResult dataSourcesResult) {
+
+                        datasources.clear();
+                        //listeners.clear();
+                        for (DataSource dataSource : dataSourcesResult.getDataSources()) {
+                            Device device = dataSource.getDevice();
+                            String fields = dataSource.getDataType().getFields().toString();
+                            datasources.add(device.getManufacturer() + " " + device.getModel() + " [" + dataSource.getDataType().getName() + " " + fields + "]");
+
+                            final DataType dataType = dataSource.getDataType();
+                            if ( dataType.equals(DataType.TYPE_HEART_RATE_BPM)) {
+
+                                final OnDataPointListener listener = new OnDataPointListener() {
+                                    @Override
+                                    public void onDataPoint(DataPoint dataPoint) {
+                                        String msg = "onDataPoint: ";
+                                        for (Field field : dataPoint.getDataType().getFields()) {
+                                            Value value = dataPoint.getValue(field);
+                                            msg += field + "=" + value + ", ";
+                                        }
+                                        Log.d(TAG, msg);
+                                    }
+                                };
+
+                                Fitness.SensorsApi.add(mClient,
+                                        new SensorRequest.Builder()
+                                                .setDataSource(dataSource)
+                                                .setDataType(dataType)
+                                                .setSamplingRate(10, TimeUnit.SECONDS)
+                                                .build(),
+                                        listener)
+                                        .setResultCallback(new ResultCallback<Status>() {
+                                            @Override
+                                            public void onResult(Status status) {
+                                                if (status.isSuccess()) {
+                                                    //listeners.add(listener);
+                                                    Log.d(TAG, "Listener for " + dataType.getName() + " registered");
+                                                } else {
+                                                    Log.e(TAG, "Failed to register listener for " + dataType.getName());
+                                                }
+                                            }
+                                        });
+                            }
+                        }
+                        //datasourcesListener.onDatasourcesListed();
+                    }
+                });
+
     }
 
 }
