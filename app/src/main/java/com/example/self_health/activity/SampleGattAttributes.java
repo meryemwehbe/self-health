@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.self_health.fragment;
+package com.example.self_health.activity;
 
 import java.util.HashMap;
 

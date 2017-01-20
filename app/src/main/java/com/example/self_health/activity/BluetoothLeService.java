@@ -1,7 +1,4 @@
-package com.example.self_health.fragment;
-
-import android.app.IntentService;
-import android.content.Intent;
+package com.example.self_health.activity;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -140,7 +137,13 @@ public class BluetoothLeService extends Service {
             byte num[] = characteristic.getValue();
             Integer res = (num[5] *256 )+ (num[4]); // + num[7];
             Float temp  = ((float) (res - 0xe1e ) * (float) 0.005) + (float) 36.6 ;// e1e-> 36.6 , e1b-> 36.4
-            intent.putExtra(EXTRA_DATA, temp.toString());
+            if ( (temp < 45.0 ) && (temp > 20.0)) { // checking the proper values
+                intent.putExtra(EXTRA_DATA, temp.toString());
+            }
+            else{
+                intent.putExtra(EXTRA_DATA, "No valid data available.");
+            }
+
         }
         else {
             // For all other profiles, writes the data formatted in HEX.
@@ -156,7 +159,7 @@ public class BluetoothLeService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        public  BluetoothLeService getService() {
+        public BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
     }

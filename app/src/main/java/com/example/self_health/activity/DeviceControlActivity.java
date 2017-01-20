@@ -1,6 +1,5 @@
 package com.example.self_health.activity;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 
@@ -13,27 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.Uri;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.example.self_health.R;
-import com.example.self_health.fragment.BluetoothLeService;
-import com.example.self_health.fragment.SampleGattAttributes;
-
 
 
 /**
@@ -57,6 +49,8 @@ public class DeviceControlActivity extends Activity {
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
     private boolean mConnected = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
+
+    private String mDeviceType;
 
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
@@ -162,17 +156,25 @@ public class DeviceControlActivity extends Activity {
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        mDeviceType = intent.getStringExtra("measurement_type");
+
+        if(mDeviceType.equals(getString(R.string.BODY_TEMP_type))) {
+            getActionBar().setIcon(R.drawable.temperature);
+        }
+        else {
+            getActionBar().setIcon(R.mipmap.ic_heart);
+        }
 
         // Sets up UI references.
         ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
 
-        //getActionBar().setTitle(mDeviceName);
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setTitle(mDeviceName);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
+
     }
 
     @Override
@@ -215,7 +217,12 @@ public class DeviceControlActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
-                mBluetoothLeService.connect(mDeviceAddress);
+                try {
+                    mBluetoothLeService.connect(mDeviceAddress);
+        }
+                catch (Exception e){
+                    Log.e(TAG, "ERROR connecting to the device");
+                }
                 return true;
             case R.id.menu_disconnect:
                 mBluetoothLeService.disconnect();
@@ -242,9 +249,7 @@ public class DeviceControlActivity extends Activity {
         }
     }
 
-    // Demonstrates how to iterate through the supported GATT Services/Characteristics.
-    // In this sample, we populate the data structure that is bound to the ExpandableListView
-    // on the UI.
+    // Iterates through the supported GATT Services/Characteristics.
     private void displayGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid;

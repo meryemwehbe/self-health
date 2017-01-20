@@ -151,8 +151,9 @@ public class MeasurementFragment extends Fragment implements
                     }
                     case 1:{
                         Intent intent = new Intent(MeasurementFragment.this.getActivity(), DeviceScanActivity.class);
+                        String str = getResources().getString(R.string.HR_type);
+                        intent.putExtra("measurement_type", str);
                         startActivity(intent);
-                        //@todo add extra info to teel that we loook for temp
                         break;
                     }
                     case 2:{
@@ -232,13 +233,12 @@ public class MeasurementFragment extends Fragment implements
                     }
                     case 8:{
                         Intent intent = new Intent(MeasurementFragment.this.getActivity(), DeviceScanActivity.class);
-                        //@todo add extra info to teel that we loook for temp
+                        String str = getResources().getString(R.string.BODY_TEMP_type);
+                        intent.putExtra("measurement_type", str);
                         startActivity(intent);
                         break;
                     }
                 }
-
-
 
 
                 Toast.makeText(getContext(), "" + position,

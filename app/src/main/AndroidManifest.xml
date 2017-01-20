@@ -41,7 +41,7 @@
         <activity android:name=".activity.PrivacyPolicyActivity" />
 
         <service
-            android:name="fragment.BluetoothLeService"
+            android:name=".activity.BluetoothLeService"
             android:enabled="true" />
         <!--
  ATTENTION: This was auto-generated to add Google Play services to your project for
@@ -51,8 +51,16 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".activity.DeviceControlActivity" />
-        <activity android:name=".activity.DeviceScanActivity"></activity>
+        <activity android:name=".activity.DeviceControlActivity"
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
+        />
+        <activity android:name=".activity.DeviceScanActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MENU_LE_SCAN"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

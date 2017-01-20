@@ -17,12 +17,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,12 +44,15 @@ public class DeviceScanActivity extends ListActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
+    private Toolbar toolbar;
 
-    private static final int REQUEST_ENABLE_BT = 1;
+    private final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
 
     private static final int MY_PERMISSIONS_REQUEST_FINE_LOCATION = 0;
+
+    private String deviceType; // either BODY_TEMP or HR
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -57,7 +62,17 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //getActionBar().setTitle(R.string.title_devices); @todo
+        Bundle bundle = getIntent().getExtras();
+        deviceType = bundle.getString("measurement_type");
+
+        getActionBar().setTitle(getString(R.string.title_devices)  + " - " + deviceType  );
+        if(deviceType.equals(getString(R.string.BODY_TEMP_type))) {
+            getActionBar().setIcon(R.drawable.temperature);
+        }
+        else {
+            getActionBar().setIcon(R.mipmap.ic_heart);
+        }
+
         mHandler = new Handler();
 
         ActivityCompat.requestPermissions(this,
@@ -66,6 +81,10 @@ public class DeviceScanActivity extends ListActivity {
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                MY_PERMISSIONS_REQUEST_FINE_LOCATION);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.BODY_SENSORS},
                 MY_PERMISSIONS_REQUEST_FINE_LOCATION);
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
@@ -94,7 +113,7 @@ public class DeviceScanActivity extends ListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.menu_le_scan, menu);
         if (!mScanning) {
             menu.findItem(R.id.menu_stop).setVisible(false);
             menu.findItem(R.id.menu_scan).setVisible(true);
@@ -105,7 +124,10 @@ public class DeviceScanActivity extends ListActivity {
             menu.findItem(R.id.menu_refresh).setActionView(
                     R.layout.fragment_scan_actionbar_indeterminate_progress);
         }
-        return true;
+        //menu.findItem(R.id.men)
+        // change the icon according to the type of measurement @todo
+        return super.onCreateOptionsMenu(menu);
+        //return true;
     }
 
     @Override
@@ -164,7 +186,8 @@ public class DeviceScanActivity extends ListActivity {
         if (device == null) return;
         final Intent intent = new Intent(this, DeviceControlActivity.class);
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());;
+        intent.putExtra("measurement_type", deviceType);
         if (mScanning) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
             mScanning = false;
@@ -198,20 +221,12 @@ public class DeviceScanActivity extends ListActivity {
     public void onStart() {
         super.onStart();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        //client.connect();
-        //AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        //AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        //client.disconnect();
     }
 
     // Adapter for holding devices found through scanning.
@@ -226,9 +241,16 @@ public class DeviceScanActivity extends ListActivity {
         }
 
         public void addDevice(BluetoothDevice device) {
-            if (!mLeDevices.contains(device)) {
-                String str = device.getName();
-                mLeDevices.add(device);
+            String name = device.getName();
+            if ((!mLeDevices.contains(device)) && (name != null) ) {
+                // hardcoding to show only POLAR H7 and BLT_MODT
+                if(deviceType.equals(getString(R.string.BODY_TEMP_type)) && name.contains("BLT_MODT")) {
+                    mLeDevices.add(device);
+                }
+                else if (deviceType.equals(getString(R.string.HR_type)) && name.contains("Polar H7")) {
+                    mLeDevices.add(device);
+                }
+
             }
         }
 
@@ -271,12 +293,16 @@ public class DeviceScanActivity extends ListActivity {
 
             BluetoothDevice device = mLeDevices.get(i);
             final String deviceName = device.getName();
-            if (deviceName != null && deviceName.length() > 0)
+            if (deviceName != null && deviceName.length() > 0){
                 viewHolder.deviceName.setText(deviceName);
-            else
+                viewHolder.deviceAddress.setText(device.getAddress());
+            }
+            else {
                 viewHolder.deviceName.setText(R.string.unknown_device);
-            viewHolder.deviceAddress.setText(device.getAddress());
-
+                viewHolder.deviceName.setVisibility(View.INVISIBLE);
+                viewHolder.deviceAddress.setText(device.getAddress());
+                viewHolder.deviceAddress.setVisibility(View.INVISIBLE);
+            }
             return view;
         }
     }
