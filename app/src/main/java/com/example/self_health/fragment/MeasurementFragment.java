@@ -1,6 +1,7 @@
 package com.example.self_health.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.example.self_health.R;
+import com.example.self_health.activity.DeviceScanActivity;
 import com.example.self_health.other.ImageAdapter;
 import com.example.self_health.other.ImageAdapterMood;
 import com.google.android.gms.common.ConnectionResult;
@@ -64,6 +66,7 @@ public class MeasurementFragment extends Fragment implements
             R.mipmap.ic_mood,
             R.drawable.ic_water,
             R.drawable.ic_food_intake,
+            R.drawable.temperature,
 
     };
     private String[] names ={
@@ -75,6 +78,7 @@ public class MeasurementFragment extends Fragment implements
             "Mood",
             "Water Intake",
             "Food Intake",
+            "Body Temperature",
 
 
 
@@ -146,15 +150,9 @@ public class MeasurementFragment extends Fragment implements
                         break;
                     }
                     case 1:{
-                        Bundle bundle = new Bundle();
-                        bundle.putString("ID", mid);
-                        HeartRateFragment fragment = new HeartRateFragment();
-                        fragment.setArguments(bundle);
-                        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
-                                android.R.anim.fade_out);
-                        fragmentTransaction.replace(R.id.frame, (Fragment)fragment);
-                        fragmentTransaction.commitAllowingStateLoss();
+                        Intent intent = new Intent(MeasurementFragment.this.getActivity(), DeviceScanActivity.class);
+                        startActivity(intent);
+                        //@todo add extra info to teel that we loook for temp
                         break;
                     }
                     case 2:{
@@ -230,6 +228,12 @@ public class MeasurementFragment extends Fragment implements
                                 android.R.anim.fade_out);
                         fragmentTransaction.replace(R.id.frame, (Fragment)fragment);
                         fragmentTransaction.commitAllowingStateLoss();
+                        break;
+                    }
+                    case 8:{
+                        Intent intent = new Intent(MeasurementFragment.this.getActivity(), DeviceScanActivity.class);
+                        //@todo add extra info to teel that we loook for temp
+                        startActivity(intent);
                         break;
                     }
                 }
