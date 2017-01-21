@@ -72,5 +72,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/toggleButton"
         android:textOff="@string/Rec_off"
-        android:textOn="@string/Rec_on" />
+        android:textOn="@string/Rec_on"
+        android:onClick="toggleRecording"/>
 </LinearLayout>

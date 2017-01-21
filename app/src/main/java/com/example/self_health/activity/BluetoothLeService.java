@@ -98,12 +98,12 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-            String str = characteristic.getStringValue(4);
-            byte num[] = characteristic.getValue();
-            Integer res = (num[5] *256 )+ (num[4]); // + num[7];
-            Float temp  = ((float) (res - 0xe1e ) * (float) 0.005) + (float) 36.6 ;// e1e-> 36.6 , e1b-> 36.4
-            Log.w(TAG, res.toString(res));
-            Log.w(TAG, Float.toString(temp));
+            //String str = characteristic.getStringValue(4);
+            //byte num[] = characteristic.getValue();
+            //Integer res = (num[5] *256 )+ (num[4]); // + num[7];
+            //Float temp  = ((float) (res - 0xe1e ) * (float) 0.005) + (float) 36.6 ;// e1e-> 36.6 , e1b-> 36.4
+            //Log.w(TAG, res.toString(res));
+            //Log.w(TAG, Float.toString(temp));
         }
     };
 

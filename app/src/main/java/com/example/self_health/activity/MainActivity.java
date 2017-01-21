@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_SCHEDULE = "schedule";
     private static final String TAG_SETTINGS = "settings";
     public static String CURRENT_TAG = TAG_HOME;
-    public GoogleApiClient mClient =null;
+    public static GoogleApiClient mClient =null;
     private GoogleSignInOptions mgso = null;
     private static final int RC_SIGN_IN = 9001;
 

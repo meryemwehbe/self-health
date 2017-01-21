@@ -13,19 +13,37 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.example.self_health.R;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataTypeCreateRequest;
+import com.google.android.gms.fitness.result.DataTypeResult;
+
+import static java.security.AccessController.getContext;
 
 
 /**
@@ -51,9 +69,16 @@ public class DeviceControlActivity extends Activity {
     private BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private String mDeviceType;
+    private Calendar mCalendar;
 
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
+
+    private boolean recordingFlag = false;
+
+    private GoogleApiClient mGoogleApiClient;
+    DataSource bpmSource;
+    DataSet    bpmDataset;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -154,15 +179,28 @@ public class DeviceControlActivity extends Activity {
         setContentView(R.layout.gatt_services_characteristics);
 
         final Intent intent = getIntent();
+        mCalendar = Calendar.getInstance();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
         mDeviceType = intent.getStringExtra("measurement_type");
+
+        mGoogleApiClient = MainActivity.mClient;
 
         if(mDeviceType.equals(getString(R.string.BODY_TEMP_type))) {
             getActionBar().setIcon(R.drawable.temperature);
         }
         else {
             getActionBar().setIcon(R.mipmap.ic_heart);
+
+            // if BPM, create dataset to pu to google FIT
+            bpmSource = new DataSource.Builder()
+                    .setAppPackageName(this)
+                    .setDataType(DataType.TYPE_HEART_RATE_BPM)
+                    .setStreamName(TAG + "bpm")
+                    .setType(DataSource.TYPE_RAW)
+                    .build();
+
+            bpmDataset = DataSet.create(bpmSource);
         }
 
         // Sets up UI references.
@@ -246,6 +284,29 @@ public class DeviceControlActivity extends Activity {
     private void displayData(String data) {
         if (data != null) {
             mDataField.setText(data);
+            if(recordingFlag){
+                //long meas_time = mCalendar.getTimeInMillis();
+                Toast.makeText(mBluetoothLeService, "Rec: " + data + " : " , Toast.LENGTH_SHORT).show();
+
+                if(mDeviceType.equals(getString(R.string.HR_type))){
+                    // saving to the google fit database
+                    Date now = new Date();
+                    mCalendar.setTime(now);
+                    long timemilis = mCalendar.getTimeInMillis();
+
+                    DataPoint bpm_now = DataPoint.create(bpmSource);
+                    bpm_now.setTimestamp(timemilis, TimeUnit.MILLISECONDS);
+                    bpm_now.getValue(Field.FIELD_BPM).setFloat(70);
+
+                    bpmDataset.add(bpm_now);
+
+                    // @todo save HR to the json local database
+                }
+                else{
+                    // @todo save BODY_TEMP to the json local database
+                }
+
+            }
         }
     }
 
@@ -305,6 +366,58 @@ public class DeviceControlActivity extends Activity {
     @Override
     public void onStop() {
         super.onStop();
+
+    }
+
+    public void toggleRecording( View view){
+        Log.d(TAG, "Recording turned " + (recordingFlag ? "OFF":"ON") );
+        recordingFlag ^= true;
+
+        // if it was turned off
+        if(!recordingFlag){
+            if(mDeviceType.equals(getString(R.string.BODY_TEMP_type))) {
+                // @todo save to the json local database
+            }
+            else { // if BPM
+                //Save in google fit
+                try {
+                    // @todo save to the json local database
+
+                    Fitness.HistoryApi.insertData(mGoogleApiClient, bpmDataset).setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(@NonNull Status status) {
+                            // Before querying the data, check to see if the insertion succeeded.
+
+                            if (!status.isSuccess()) {
+                                String sta = status.getStatusMessage();
+                                Log.d(TAG, "FAILED SAVING TO GOOGLE FIT");
+
+                            }
+                            else {
+                                // At this point, the data has been inserted and can be read.
+                                Log.d(TAG, "SUCESS SAVING TO GOOGLE FIT");
+                            }
+                        }
+
+                    });
+
+                    Log.d(TAG, "Saved" + bpmDataset.toString() );
+                    Toast.makeText(this, "Saved" + Integer.toString(bpmDataset.getDataPoints().size()) + " elements to the database.", Toast.LENGTH_SHORT).show();
+                    // clear the dataset
+                    bpmDataset = DataSet.create(bpmSource);
+                }
+                catch(Exception e)
+                {
+                    Log.d(TAG, "Error saving" + bpmDataset.toString() );
+                    Toast.makeText(this, "Error saving " + Integer.toString(bpmDataset.getDataPoints().size()) + " elements to the database.", Toast.LENGTH_SHORT).show();
+                    // clear the dataset
+                    bpmDataset = DataSet.create(bpmSource);
+                }
+
+
+            }
+        }
+
 
     }
 }
